@@ -6,11 +6,11 @@ import mediapipe as mp
 
 def ball_animation ():
     global ball_speed_x , ball_speed_y, player_score, opponent_score
-    ball.x += ball_speed_x
+    ball.x += ball_speed_x 
     ball.y += ball_speed_y
 
-    if ball.top<=0 or ball.bottom>=window_h:
-        pygame.mixer.Sound.play(pong_sound)
+    if ball.top<=0 or ball.bottom>=window_h: # אם הכדור מגיע לאחד מהגבולות הוא חוזר לאמצע ומוסיף נקודה לצד השני
+        pygame.mixer.Sound.play(pong_sound) 
         ball_speed_y *=-1
     if ball.left<=0:
         opponent_score += 1
@@ -27,13 +27,13 @@ def player_animation():
     global player_speed
     player.y += player_speed
     player_speed = 0
-    if player.top<=0:
+    if player.top<=0: # אם השחקן מגיע לאחד מהגבולות הוא לא עובר את הגבולות  
         player.top=0
     if player.bottom>= window_h:
         player.bottom= window_h
 
 def opponent_ai():
-    if opponent.top < ball.y:
+    if opponent.top < ball.y: # אם היריב מגיע לאחד מהגבולות הוא לא עוברב את הגבולות 
         opponent.top+= opponent_speed
     if opponent.bottom > ball.y:
         opponent.bottom -= opponent_speed
@@ -44,7 +44,7 @@ def opponent_ai():
 
 def ball_restart():
     global ball_speed_x , ball_speed_y
-    ball.center= (window_w/2, window_h/2)
+    ball.center= (window_w/2, window_h/2) 
     ball_speed_y *= random.choice((1,-1))
     ball_speed_x *= random.choice((1,-1))
 
@@ -99,48 +99,26 @@ while True:
 	
     results = hands.process(RGB_image)
     multiLandMarks = results.multi_hand_landmarks
-    
-    if multiLandMarks:
-        # go over all hands found and draw them on the BGR image
-        for handLms in multiLandMarks:
-            mpDraw.draw_landmarks(frame, handLms, mp_Hands.HAND_CONNECTIONS)
-            # the location of the index finger tip is number 8 in the landmarks
-        index_finger_y = multiLandMarks[0].landmark[8].y
-        index_finger_y1=multiLandMarks[0].landmark[5].y
-    # Display the resulting frame
-    # font
+
     font = cv2.FONT_HERSHEY_SIMPLEX
-    
-    # org
+
     org = (50, 50)
-    
-    # fontScale
+
     fontScale = 1
-    
-    # Blue color in BGR
+
     color = (255, 0, 0)
-    
-    # Line thickness of 2 px
+
     thickness = 2
     
-    # Using cv2.putText() method
     frame = cv2.putText(frame, str(index_finger_y), org, font, 
                     fontScale, color, thickness, cv2.LINE_AA)
     cv2.imshow('frame', frame)
     
-    if index_finger_y > index_finger_y1:
-        print("down")
-    else:
-        print("up")
-	
-	# the 'q' button is set as the
-	# quitting button you may use any
-	# desired button of your choice
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 
-    for event in pygame.event.get():
+    ''''for event in pygame.event.get():
         if event.type==pygame.QUIT:
             pygame.quit() 
             sys.exit()
@@ -153,8 +131,11 @@ while True:
             if event.key== pygame.K_UP:
                 player_speed -=20
             if event.key== pygame.K_DOWN:
-                player_speed +=20
-                
+                player_speed +=20'''
+    if multiLandMarks:
+        for handLms in multiLandMarks:
+            mpDraw.draw_landmarks(frame, handLms, mp_Hands.HAND_CONNECTIONS)
+        index_finger_y = multiLandMarks[0].landmark[5].y            
         if index_finger_y>0.7:
             player_speed-=20    
         if index_finger_y<0.4:
@@ -182,7 +163,6 @@ while True:
     pygame.display.flip()
     clock.tick(100)
 
-# After the loop release the cap object
 vid.release()
-# Destroy all the windows
+
 cv2.destroyAllWindows()
