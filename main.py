@@ -1,13 +1,13 @@
 import pygame, sys, random
-#from pygame.constants import K_DOWN
+from pygame.constants import K_DOWN
 import cv2
 import mediapipe as mp
 
 
 def ball_animation ():
     global ball_speed_x , ball_speed_y, player_score, opponent_score
-    ball.x += ball_speed_x 
-    ball.y += ball_speed_y
+    ball.x += ball_speed_x*2
+    ball.y += ball_speed_y+1
 
     if ball.top<=0 or ball.bottom>=window_h: # אם הכדור מגיע לאחד מהגבולות הוא חוזר לאמצע ומוסיף נקודה לצד השני
         pygame.mixer.Sound.play(pong_sound) 
@@ -22,18 +22,19 @@ def ball_animation ():
         ball_restart()
     if ball.colliderect(player) or ball.colliderect(opponent):
         ball_speed_x*= -1
+        ball_speed_y+= -1 
 
 def player_animation():
     global player_speed
     player.y += player_speed
     player_speed = 0
-    if player.top<=0: # אם השחקן מגיע לאחד מהגבולות הוא לא עובר את הגבולות  
+    if player.top<=0: 
         player.top=0
     if player.bottom>= window_h:
         player.bottom= window_h
 
 def opponent_ai():
-    if opponent.top < ball.y: # אם היריב מגיע לאחד מהגבולות הוא לא עוברב את הגבולות 
+    if opponent.top < ball.y: 
         opponent.top+= opponent_speed
     if opponent.bottom > ball.y:
         opponent.bottom -= opponent_speed
@@ -74,9 +75,9 @@ opponent= pygame.Rect(10,window_h/2-70,10,140)
 bg_color=pygame.Color('grey12')
 light_grey=(200,200,200)
 
-ball_speed_x=7 * random.choice((1,-1))
-ball_speed_y=7 * random.choice((1,-1))
-player_speed=0
+ball_speed_x= 9 * random.choice((1,-1))
+ball_speed_y= 9 * random.choice((1,-1))
+player_speed= 0
 opponent_speed= 7
 
 pong_sound= pygame.mixer.Sound("pong.ogg")
@@ -93,7 +94,7 @@ while True:
     # Capture the video frame
 	# by frame
     ret, frame = vid.read()
-    index_finger_x = 0
+    index_finger_y = 0
 
     RGB_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 	
@@ -112,13 +113,13 @@ while True:
     
     frame = cv2.putText(frame, str(index_finger_y), org, font, 
                     fontScale, color, thickness, cv2.LINE_AA)
-    cv2.imshow('frame', frame)
+   
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 
-    ''''for event in pygame.event.get():
+    '''for event in pygame.event.get():
         if event.type==pygame.QUIT:
             pygame.quit() 
             sys.exit()
@@ -135,11 +136,19 @@ while True:
     if multiLandMarks:
         for handLms in multiLandMarks:
             mpDraw.draw_landmarks(frame, handLms, mp_Hands.HAND_CONNECTIONS)
-        index_finger_y = multiLandMarks[0].landmark[5].y            
+        index_finger_y = multiLandMarks[0].landmark[5].y  
+        index_finger_y1= multiLandMarks[0].landmark[8].y          
         if index_finger_y>0.7:
-            player_speed-=20    
+            player_speed+=20    
         if index_finger_y<0.4:
-            player_speed+=20
+            player_speed-=20
+        if index_finger_y1>index_finger_y:
+            pygame.quit()
+            sys.exit()
+    '''for event in pygame.event.get():
+        if event.type==pygame.QUIT:
+            pygame.quit() 
+            sys.exit()'''
 
     ball_animation() 
     player_animation()
@@ -161,7 +170,7 @@ while True:
 
 
     pygame.display.flip()
-    clock.tick(100)
+    clock.tick(60)
 
 vid.release()
 
