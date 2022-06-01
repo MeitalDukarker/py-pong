@@ -1,5 +1,5 @@
 import pygame, sys, random
-from pygame.constants import K_DOWN
+#from pygame.constants import K_DOWN
 import cv2
 import mediapipe as mp
 
@@ -9,7 +9,8 @@ def ball_animation ():
     ball.x += ball_speed_x*2
     ball.y += ball_speed_y+1
 
-    if ball.top<=0 or ball.bottom>=window_h: # אם הכדור מגיע לאחד מהגבולות הוא חוזר לאמצע ומוסיף נקודה לצד השני
+    #אם הכדור מגיע לאחד מהגבולות הוא חוזר לאמצע ומוסיף נקודה לצד השני
+    if ball.top<=0 or ball.bottom>=window_h:      
         pygame.mixer.Sound.play(pong_sound) 
         ball_speed_y *=-1
     if ball.left<=0:
@@ -83,40 +84,27 @@ opponent_speed= 7
 pong_sound= pygame.mixer.Sound("pong.ogg")
 score_sound= pygame.mixer.Sound("score.ogg")
 
-# define a video capture object
+# לאיזה מצלמה המחשב מתחבר
 vid = cv2.VideoCapture(0)
 
+#מאתחל המערכת של זיהוי הידיים
 mp_Hands = mp.solutions.hands
+#קולט את הידיים
 hands = mp_Hands.Hands()
+#מצייר את הנקודות שעל הידיים
 mpDraw = mp.solutions.drawing_utils
 
 while True:
-    # Capture the video frame
-	# by frame
+    #קורא את התמונה
     ret, frame = vid.read()
     index_finger_y = 0
 
+    #משנה את הצבעים מBGR לRGB
     RGB_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 	
+    #מחפש את הידיים בתמונה
     results = hands.process(RGB_image)
     multiLandMarks = results.multi_hand_landmarks
-
-    font = cv2.FONT_HERSHEY_SIMPLEX
-
-    org = (50, 50)
-
-    fontScale = 1
-
-    color = (255, 0, 0)
-
-    thickness = 2
-    
-    frame = cv2.putText(frame, str(index_finger_y), org, font, 
-                    fontScale, color, thickness, cv2.LINE_AA)
-   
-    
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
 
 
     '''for event in pygame.event.get():
@@ -133,15 +121,22 @@ while True:
                 player_speed -=20
             if event.key== pygame.K_DOWN:
                 player_speed +=20'''
+
+    #אם הוא מוצא ידיים הוא עובר על הידיים ומצייר אותם   
     if multiLandMarks:
         for handLms in multiLandMarks:
             mpDraw.draw_landmarks(frame, handLms, mp_Hands.HAND_CONNECTIONS)
+        #מיקום הנקודות המצויינות שעל היד 
         index_finger_y = multiLandMarks[0].landmark[5].y  
-        index_finger_y1= multiLandMarks[0].landmark[8].y          
+        index_finger_y1= multiLandMarks[0].landmark[8].y
+
+        #אם הנקודה מעל מיקום מסויים במסך אז השחקן עולה
         if index_finger_y>0.7:
-            player_speed+=20    
+            player_speed+=20  
+        #אם הנקודה מתחת לנקודה מסויימת אז השחקן יורד  
         if index_finger_y<0.4:
             player_speed-=20
+        #אם היד סגורה המשחק נסגר
         if index_finger_y1>index_finger_y:
             pygame.quit()
             sys.exit()
